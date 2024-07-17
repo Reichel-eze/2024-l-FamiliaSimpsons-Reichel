@@ -179,15 +179,28 @@ esExitosa(Persona) :-
     cuantasMedallas(Deporte,CantidadMedallas),
     CantidadMedallas > 10.
 
+esExitosaV2(Persona) :-
+    practicaDeporte(Persona, _), % la persona tiene que practicar un deporte
+    forall(practicaDeporte(Persona,Deporte), tieneMasDeDiesMedallas(Deporte)). % para todo deporte que practique la persona, ese deporte tiene mas de 10 medallas
+
+tieneMasDeDiesMedallas(Deporte) :-
+    cuantasMedallas(Deporte,Cantidad),  
+    Cantidad > 10.
+
 cuantasMedallas(natacion(_, CantidadMedallas), CantidadMedallas).
 cuantasMedallas(futbol(CantidadMedallas, _, _), CantidadMedallas).
 cuantasMedallas(rugby(_, CantidadMedallas), CantidadMedallas).
 
 % 12) Saber la cantidad total de medallas de una persona
 
-medallas(Persona, MedallasTotal) :-
+medallasTotales(Persona, MedallasTotal) :-
+    practicaDeporte(Persona,_),
+    findall(Medallas, medallasDe(Persona, Medallas), ListaDeMedallas),
+    sum_list(ListaDeMedallas, MedallasTotal).
+    
+medallasDe(Persona,CantMedalla) :-   % para buscar cuantas medallas tiene una persona en un deporte
     practicaDeporte(Persona,Deporte),
-    cuantasMedallas(Deporte, MedallasTotal).
+    cuantasMedallas(Deporte,CantMedalla).
 
 % 13) Saber en cuantos deportes no es bueno.
 
@@ -195,3 +208,13 @@ medallas(Persona, MedallasTotal) :-
 %    practicaDeporte(Persona, Deporte),
 %    findall(Deporte, not(esBuenaDeportistaV2(Persona)), Deportes),
 %    length(Deportes, CantidadDeportes).
+
+cantidadDeDeportesQueNoEsBueno(Persona, Cantidad) :-
+    practicaDeporte(Persona, _),
+    findall(Deporte, noSeDestacaEn(Deporte,Persona), ListaDeDeportesMalos),
+    length(ListaDeDeportesMalos, Cantidad).
+
+%% Asumiendo que lo que se pide son los deportes que la persona practica pero NO se destaca --> deportes en los que no es buenoV2
+noSeDestacaEn(Deporte, Persona):-
+    practicaDeporte(Persona,Deporte),
+    not(esBuenaV2(Deporte)).
